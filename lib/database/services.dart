@@ -1,109 +1,87 @@
 import 'dart:convert';
+import 'package:flutter_new/database/order.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Service {
 
-  static Future<String> addUser(
-  String language,
-  String number,
-  String firstName,
-  String lastName,
-  String password,
-  String confirmPassword,
-      )
-  async {
+  static Future<String> addDiscount(
+    String name,
+    String description,
+    String percentage,
+    String no_of_services,
 
+  ) async {
     try {
+      String token;
       var map = Map<String, dynamic>();
-      map["language"] = language;
-      map["mobile_no"] = number;
-      map["first_name"] = firstName;
-      map["last_name"] = lastName;
-      map["password"] = password;
-      map["password_confirmation"] = confirmPassword;
-      print(map["language"]);
-      print(map["mobile_no"]);
-      print(map["first_name"]);
-      print(map["last_name"]);
-      print(map["password"]);
-      print(map["password_confirmation"]);
+      map["name"] = name;
+      map["description"] = description;
+      map["percentage"] = percentage;
+      map["no_of_services"] = no_of_services;
+      print("==================================");
+      print(map["name"]);
+      print(map["description"]);
+      print(map["percentage"]);
+      print(map["no_of_services"]);
       final data = json.encode(map);
-      Map<String, String> headers = {"Content-type": "application/json"};
+      print(data);
+      SharedPreferences preferences = await SharedPreferences.getInstance();
+      token = preferences.getString('token');
+      print(token);
+       Map<String, String> headers = {
+        "Content-type": "application/json",
+        "Authorization" : "Bearer $token"
+      };
       final response = await http.post(
-          'https://wooju.liyumalk.tk/api/registerappuser',
+          'http://ec2-3-16-10-62.us-east-2.compute.amazonaws.com/api/discounts/create',
           headers: headers,
           body: data);
       print(response.statusCode.toString());
-      return response.statusCode.toString();
-
-      print('addUser Response: ${response.body}');
-      if (200 == response.statusCode) {
-        print("gg");
-
-        print("gg1212");
-        return response.body;
-
-      } else {
-        return "error";
-      }
+      print("OK");
+      return response.body.toString();
     } catch (e) {
       return "error";
     }
   }
 
-  //user login
-  // static Future<String> loginUser(
-  //     String _number,
-  //     String _password,
-  //     ) async {
-  //   try {
-  //     var map = Map<String, dynamic>();
-  //     map["phone_no"] = _number;
-  //     map["password"] = _password;
-  //     final data = json.encode(map);
-  //     Map<String, String> headers = {"Content-type": "application/json"};
-  //     final response = await http.post('https://wooju.liyumalk.tk/api/login',
-  //         headers: headers,
-  //         body: data);
-  //     print(response.statusCode);
-  //     return response.statusCode.toString();
-  //
-  //     if (200 == response.statusCode) {
-  //       print("logged User: ${response.body}");
-  //       return response.body;
-  //     } else {
-  //       return "error";
-  //     }
-  //   } catch (e) {
-  //     return "error";
-  //   }
+
+  // static List<Order> parseResponse(String responseBody) {
+  //   final parsed = json.decode(responseBody).cast<Map<String, dynamic>>();
+  //   return parsed.map<Order>((json) => Order.fromJson(json)).toList();
   // }
 
   //user login
   static Future<String> loginUser(
-      String _number,
-      String _password,
-      ) async {
+    String _grantType,
+    String _clientId,
+    String _clientSecret,
+    String _username,
+    String _password,
+  ) async {
     try {
-
       var map = Map<String, dynamic>();
-      map["phone_no"] = _number;
+      map["grant_type"] = _grantType;
+      map["client_id"] = _clientId;
+      map["client_secret"] = _clientSecret;
+      map["username"] = _username;
       map["password"] = _password;
+      print("gg");
+      print(map["grant_type"]);
       final data = json.encode(map);
       Map<String, String> headers = {"Content-type": "application/json"};
-      final response = await http.post('https://wooju.liyumalk.tk/api/login',headers: headers,body: data);
+      final response = await http.post(
+          'http://ec2-3-16-10-62.us-east-2.compute.amazonaws.com/api/user/api-token',
+          headers: headers,
+          body: data);
       print(response.statusCode.toString());
 
       var message = json.decode(response.body);
       print(message['message']);
       //return response.statusCode.toString();
       return response.body.toString();
-
-
-
     } catch (e) {
-    return "error";}
-  }
-
-
+      return "error";
     }
+  }
+}
